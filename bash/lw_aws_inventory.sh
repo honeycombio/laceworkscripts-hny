@@ -184,7 +184,7 @@ function getRegions {
 function getEC2Instances {
   local profile_string=$1
   local r=$2
-  local instances=$(aws $profile_string ec2 describe-instances --query 'Reservations[*].Instances[*].[InstanceId]' --filters Name=instance-state-name,Values=running --region $r --output json --no-cli-pager  2>&1)
+  local instances=$(aws $profile_string ec2 describe-instances --query 'Reservations[*].Instances[*].[InstanceId]' --filters "Name=instance-state-name,Values=running" "Name=tag:Environment,Values=production" --region $r --output json --no-cli-pager  2>&1)
   if [[ $instances = [* ]] 
   then
     echo $(echo $instances | jq 'flatten | length')
@@ -196,7 +196,7 @@ function getEC2Instances {
 function getEC2InstacevCPUs {
   local profile_string=$1
   local r=$2
-  cpucounts=$(aws $profile_string ec2 describe-instances --query 'Reservations[*].Instances[*].[CpuOptions]' --filters Name=instance-state-name,Values=running --region $r --output json --no-cli-pager | jq  '.[] | .[] | .[] | .CoreCount * .ThreadsPerCore')
+  cpucounts=$(aws $profile_string ec2 describe-instances --query 'Reservations[*].Instances[*].[CpuOptions]' --filters "Name=instance-state-name,Values=running" "Name=tag:Environment,Values=production" --region $r --output json --no-cli-pager | jq  '.[] | .[] | .[] | .CoreCount * .ThreadsPerCore')
   returncount=0
   for cpucount in $cpucounts; do
     returncount=$(($returncount + $cpucount))
